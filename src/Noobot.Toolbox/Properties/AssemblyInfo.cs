@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Noobot.Toolbox")]
 [assembly: AssemblyDescription("Usefull Extensions for Noobot, a SlackBot. https://github.com/noobot/")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Noobot")]
+[assembly: AssemblyCompany("Workshop2")]
 [assembly: AssemblyProduct("Noobot.Toolbox")]
 [assembly: AssemblyCopyright("Copyright © Noobot 2016 - Simon Colmer")]
 [assembly: AssemblyTrademark("")]

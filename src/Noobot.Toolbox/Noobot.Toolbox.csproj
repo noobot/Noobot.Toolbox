@@ -90,7 +90,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
+    <Compile Include="ToolboxConfiguration.cs" />
     <Compile Include="Pipeline\Middleware\AdminMiddleware.cs" />
     <Compile Include="Pipeline\Middleware\AutoResponderMiddleware.cs" />
     <Compile Include="Pipeline\Middleware\CalculatorMiddleware.cs" />
