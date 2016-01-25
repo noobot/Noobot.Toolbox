@@ -5,7 +5,11 @@ using Noobot.Core.Plugins;
 
 namespace Noobot.Toolbox.Plugins
 {
-    internal class AdminPlugin : IPlugin
+    /// <summary>
+    /// Given a user authenticated, this plugin can give users extra abilities/functions.
+    /// A good example of how Middleware and Plugins can work together.
+    /// </summary>
+    public class AdminPlugin : IPlugin
     {
         private readonly IConfigReader _configReader;
         private readonly ILog _log;

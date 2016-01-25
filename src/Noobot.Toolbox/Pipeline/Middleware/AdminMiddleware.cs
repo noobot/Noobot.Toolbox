@@ -9,7 +9,11 @@ using Noobot.Toolbox.Plugins;
 
 namespace Noobot.Toolbox.Pipeline.Middleware
 {
-    internal class AdminMiddleware : MiddlewareBase
+    /// <summary>
+    /// Given a user authenticated, this plugin can give users extra abilities/functions.
+    /// A good example of how Middleware and Plugins can work together.
+    /// </summary>
+    public class AdminMiddleware : MiddlewareBase
     {
         private readonly AdminPlugin _adminPlugin;
         private readonly SchedulePlugin _schedulePlugin;

@@ -12,7 +12,7 @@ using SlackConnector.Models;
 
 namespace Noobot.Toolbox.Plugins
 {
-    internal class SchedulePlugin : IPlugin
+    public class SchedulePlugin : IPlugin
     {
         private string FileName { get; } = "schedules";
         private readonly StoragePlugin _storagePlugin;
