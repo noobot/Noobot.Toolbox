@@ -10,7 +10,7 @@ using Noobot.Toolbox.Plugins;
 namespace Noobot.Toolbox.Pipeline.Middleware
 {
     /// <summary>
-    /// Given a user authenticated, this plugin can give users extra abilities/functions.
+    /// Requires config entry 'adminPin' to be populated. Given a user authenticated, this plugin can give users extra abilities/functions.
     /// A good example of how Middleware and Plugins can work together.
     /// </summary>
     public class AdminMiddleware : MiddlewareBase

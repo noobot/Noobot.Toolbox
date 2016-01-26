@@ -10,6 +10,9 @@ using Noobot.Core.Plugins.StandardPlugins;
 
 namespace Noobot.Toolbox.Pipeline.Middleware
 {
+    /// <summary>
+    /// Requires config entry 'flickr:apiKey' to be populated
+    /// </summary>
     public class FlickrMiddleware : MiddlewareBase
     {
         private readonly IConfigReader _configReader;
