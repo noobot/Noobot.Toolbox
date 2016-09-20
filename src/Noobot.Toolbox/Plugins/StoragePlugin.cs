@@ -68,7 +68,7 @@ namespace Noobot.Toolbox.Plugins
 
         private string GetFilePath(string fileName)
         {
-            return Path.Combine(_directory, fileName + ".txt");
+            return Path.Combine(_directory, fileName + ".json");
         }
     }
 }
