@@ -1,5 +1,5 @@
 ﻿using Noobot.Core.Configuration;
-using Noobot.Toolbox.Pipeline.Middleware;
+using Noobot.Toolbox.Middleware;
 using Noobot.Toolbox.Plugins;
 
 namespace Noobot.Toolbox

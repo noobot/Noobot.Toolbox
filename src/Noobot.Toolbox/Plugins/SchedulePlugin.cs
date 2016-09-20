@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using FlatFile.Delimited.Attributes;
 using Noobot.Core;
 using Noobot.Core.Logging;
 using Noobot.Core.MessagingPipeline.Response;
@@ -175,25 +174,16 @@ namespace Noobot.Toolbox.Plugins
                 _statsPlugin.RecordStat("Schedules:Active", _schedules.Count);
             }
         }
-
-        [DelimitedFile(Delimiter = ";", Quotes = "\"")]
+        
         public class ScheduleEntry
         {
-            [DelimitedField(1, NullValue = "=Null")]
             public DateTime? LastRun { get; set; }
-            [DelimitedField(2)]
             public TimeSpan RunEvery { get; set; }
-            [DelimitedField(3)]
             public string Command { get; set; }
-            [DelimitedField(4)]
             public string Channel { get; set; }
-            [DelimitedField(5)]
             public ResponseType ChannelType { get; set; }
-            [DelimitedField(6)]
             public string UserId { get; set; }
-            [DelimitedField(7)]
             public string UserName { get; set; }
-            [DelimitedField(8)]
             public bool RunOnlyAtNight { get; set; }
 
             public override string ToString()

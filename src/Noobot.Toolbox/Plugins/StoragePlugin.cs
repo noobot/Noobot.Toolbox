@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using FlatFile.Core;
-using FlatFile.Delimited.Attributes;
-using FlatFile.Delimited.Implementation;
+using Newtonsoft.Json;
 using Noobot.Core.Logging;
 using Noobot.Core.Plugins;
 
@@ -31,7 +26,8 @@ namespace Noobot.Toolbox.Plugins
         }
 
         public void Stop()
-        { }
+        {
+        }
 
         public T[] ReadFile<T>(string fileName) where T : class, new()
         {
@@ -41,52 +37,26 @@ namespace Noobot.Toolbox.Plugins
                 File.Create(filePath).Dispose();
             }
 
-            IFlatFileEngine engine = GetFlatFileEngine<T>();
-            MethodInfo decorateMethod = engine.GetType().GetMethod("Read");
-            MethodInfo generic = decorateMethod.MakeGenericMethod(typeof(T));
+            T[] result = new T[0];
 
             try
             {
-                using (var stream = new FileStream(filePath, FileMode.Open))
-                {
-                    var results = generic.Invoke(engine, new object[] { stream }) as IEnumerable<T>;
-                    return results.ToArray();
-                }
+                result = JsonConvert.DeserializeObject<T[]>(File.ReadAllText(filePath));
             }
-            catch (FormatException ex)
+            catch (Exception ex)
             {
-                _log.Log($"Error while loading file {filePath}, deleting file to ensure it doesn't happen again.");
-                _log.Log(ex.ToString());
-
-                File.Delete(filePath);
-                return new T[0];
+                _log.Log($"Error loading file '{filePath}' - {ex}");
             }
+
+            return result;
         }
 
         public void SaveFile<T>(string fileName, T[] objects) where T : class, new()
         {
             string filePath = GetFilePath(fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Write))
-            {
-                IFlatFileEngine engine = GetFlatFileEngine<T>();
-
-                MethodInfo decorateMethod = engine.GetType().GetMethod("Write");
-                MethodInfo generic = decorateMethod.MakeGenericMethod(typeof(T));
-                generic.Invoke(engine, new object[] { stream, objects });
-            }
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(objects));
         }
-
-        private static IFlatFileEngine GetFlatFileEngine<T>() where T : class, new()
-        {
-            var factory = new DelimitedFileEngineFactory();
-
-            MethodInfo method = typeof(FlatFileEngineFactoryExtensions).GetMethod("GetEngine");
-
-            MethodInfo generic = method.MakeGenericMethod(typeof(T));
-            return generic.Invoke(factory, new object[] { factory, null }) as IFlatFileEngine;
-        }
-
+        
         public void DeleteFile(string fileName)
         {
             string filePath = GetFilePath(fileName);

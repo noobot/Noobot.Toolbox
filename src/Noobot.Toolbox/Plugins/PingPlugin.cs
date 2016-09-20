@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FlatFile.Delimited.Attributes;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins;
@@ -106,11 +105,9 @@ namespace Noobot.Toolbox.Plugins
                 return _userIds.ToArray();
             }
         }
-
-        [DelimitedFile(Delimiter = ";", Quotes = "\"")]
+        
         private class PingModel
         {
-            [DelimitedField(1)]
             public string UserId { get; set; }
         }
     }
