@@ -41,7 +41,12 @@ namespace Noobot.Toolbox.Plugins
 
             try
             {
-                result = JsonConvert.DeserializeObject<T[]>(File.ReadAllText(filePath));
+                string file = File.ReadAllText(filePath);
+
+                if (!string.IsNullOrEmpty(file))
+                {
+                    result = JsonConvert.DeserializeObject<T[]>(file);
+                }
             }
             catch (Exception ex)
             {
@@ -54,7 +59,7 @@ namespace Noobot.Toolbox.Plugins
         public void SaveFile<T>(string fileName, T[] objects) where T : class, new()
         {
             string filePath = GetFilePath(fileName);
-            File.WriteAllText(filePath, JsonConvert.SerializeObject(objects));
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(objects, Formatting.Indented));
         }
         
         public void DeleteFile(string fileName)
