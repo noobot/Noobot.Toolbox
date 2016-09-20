@@ -3,7 +3,7 @@ using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 
-namespace Noobot.Toolbox.Pipeline.Middleware
+namespace Noobot.Toolbox.Middleware
 {
     public class AutoResponderMiddleware : MiddlewareBase
     {

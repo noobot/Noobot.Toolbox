@@ -8,7 +8,7 @@ using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
 
-namespace Noobot.Toolbox.Pipeline.Middleware
+namespace Noobot.Toolbox.Middleware
 {
     /// <summary>
     /// Requires config entry 'flickr:apiKey' to be populated

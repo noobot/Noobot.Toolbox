@@ -7,7 +7,7 @@ using Noobot.Core.Plugins.StandardPlugins;
 using xFunc.Maths;
 using xFunc.Maths.Expressions;
 
-namespace Noobot.Toolbox.Pipeline.Middleware
+namespace Noobot.Toolbox.Middleware
 {
     public class CalculatorMiddleware : MiddlewareBase
     {

@@ -8,7 +8,7 @@ using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
 using RestSharp;
 
-namespace Noobot.Toolbox.Pipeline.Middleware
+namespace Noobot.Toolbox.Middleware
 {
     public class JokeMiddleware : MiddlewareBase
     {

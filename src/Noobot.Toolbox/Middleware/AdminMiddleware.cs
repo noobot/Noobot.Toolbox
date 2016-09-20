@@ -7,7 +7,7 @@ using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Toolbox.Plugins;
 
-namespace Noobot.Toolbox.Pipeline.Middleware
+namespace Noobot.Toolbox.Middleware
 {
     /// <summary>
     /// Requires config entry 'adminPin' to be populated. Given a user authenticated, this plugin can give users extra abilities/functions.
