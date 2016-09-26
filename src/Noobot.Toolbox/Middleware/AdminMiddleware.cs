@@ -98,7 +98,7 @@ namespace Noobot.Toolbox.Middleware
             }
 
             var schedules = _schedulePlugin.ListAllSchedules();
-            string[] scheduleStrings = schedules.Select((x, i) => x.ToString(i) + $" Channel: '{x.Channel}'.").ToArray();
+            string[] scheduleStrings = schedules.Select((x) => $"Guid: '{x.Guid}' Channel: '{x.Channel}'.").ToArray();
 
             yield return message.ReplyToChannel("All Schedules:");
             yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));

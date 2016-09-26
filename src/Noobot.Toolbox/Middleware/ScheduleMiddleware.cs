@@ -32,9 +32,9 @@ namespace Noobot.Toolbox.Middleware
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule nightly"},
-                    Description = "Schedule a command to execute every day on the current channel. Usage: _schedule nightly @{bot} tell me a joke_",
-                    EvaluatorFunc = NightlyHandler,
+                    ValidHandles = new [] { "schedule cronjob"},
+                    Description = "Schedule a cron job for this channel. Usage: _schedule daily @{bot} tell me a joke_",
+                    EvaluatorFunc = (message, s) => { throw new NotImplementedException(); },
                 },
                 new HandlerMapping
                 {
@@ -53,19 +53,17 @@ namespace Noobot.Toolbox.Middleware
 
         private IEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, string matchedHandle)
         {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromHours(1), false);
+            int minutesPastTheHour = DateTime.Now.Minute;
+            string schedule = $"0 {minutesPastTheHour} 0/1 * * ?";
+            yield return CreateSchedule(message, matchedHandle, schedule);
         }
 
         private IEnumerable<ResponseMessage> DayHandler(IncomingMessage message, string matchedHandle)
         {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromDays(1), false);
+            throw new NotImplementedException();
+            //yield return CreateSchedule(message, matchedHandle, TimeSpan.FromDays(1));
         }
-
-        private IEnumerable<ResponseMessage> NightlyHandler(IncomingMessage message, string matchedHandle)
-        {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromDays(1), true);
-        }
-
+        
         private IEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, string matchedHandle)
         {
             SchedulePlugin.ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
@@ -74,7 +72,7 @@ namespace Noobot.Toolbox.Middleware
             {
                 yield return message.ReplyToChannel("Schedules for channel:");
 
-                string[] scheduleStrings = schedules.Select((x, i) => x.ToString(i)).ToArray();
+                string[] scheduleStrings = schedules.Select(x => x.Guid.ToString()).ToArray();
                 yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
             }
             else
@@ -121,18 +119,18 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private ResponseMessage CreateSchedule(IncomingMessage message, string matchedHandle, TimeSpan timeSpan, bool runOnlyAtNight)
+        private ResponseMessage CreateSchedule(IncomingMessage message, string matchedHandle, string cronSchedule)
         {
             var schedule = new SchedulePlugin.ScheduleEntry
             {
+                Guid = Guid.NewGuid(),
                 Channel = message.Channel,
                 ChannelType = message.ChannelType,
                 Command = message.TargetedText.Substring(matchedHandle.Length).Trim(),
-                RunEvery = timeSpan,
+                CronSchedule = cronSchedule,
                 UserId = message.UserId,
                 UserName = message.Username,
-                LastRun = DateTime.Now,
-                RunOnlyAtNight = runOnlyAtNight
+                LastRun = DateTime.Now
             };
 
             if (string.IsNullOrEmpty(schedule.Command))
