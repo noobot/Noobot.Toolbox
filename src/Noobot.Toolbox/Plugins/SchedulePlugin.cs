@@ -16,14 +16,14 @@ namespace Noobot.Toolbox.Plugins
     public class SchedulePlugin : IPlugin
     {
         private string FileName { get; } = "schedules";
-        private readonly StoragePlugin _storagePlugin;
+        private readonly JsonStoragePlugin _storagePlugin;
         private readonly INoobotCore _noobotCore;
         private readonly StatsPlugin _statsPlugin;
         private readonly ILog _log;
         private readonly object _lock = new object();
         private readonly List<ScheduleEntry> _schedules = new List<ScheduleEntry>();
 
-        public SchedulePlugin(StoragePlugin storagePlugin, INoobotCore noobotCore, StatsPlugin statsPlugin, ILog log)
+        public SchedulePlugin(JsonStoragePlugin storagePlugin, INoobotCore noobotCore, StatsPlugin statsPlugin, ILog log)
         {
             _storagePlugin = storagePlugin;
             _noobotCore = noobotCore;
@@ -104,7 +104,7 @@ namespace Noobot.Toolbox.Plugins
         {
             var job = JobBuilder.Create();
             job.UsingJobData("guid", schedule.Guid.ToString());
-            job.
+           // job.
 
 
             var trigger = TriggerBuilder.Create()
@@ -114,8 +114,8 @@ namespace Noobot.Toolbox.Plugins
                 .Build();
 
             IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler();
-            scheduler.JobFactory = new 
-            scheduler.
+            //scheduler.JobFactory = new 
+            //scheduler.
         }
 
         // private void RunSchedules(object sender, ElapsedEventArgs e)
