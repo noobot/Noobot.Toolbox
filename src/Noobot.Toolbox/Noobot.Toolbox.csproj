@@ -36,6 +36,14 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FlatFile.Core, Version=0.2.16.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FlatFile.Core.0.2.16\lib\net45\FlatFile.Core.dll</HintPath>
       <Private>True</Private>
@@ -56,8 +64,8 @@
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Noobot.Core, Version=1.0.6107.24276, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Noobot.Core.1.0.6107.24276\lib\net451\Noobot.Core.dll</HintPath>
+    <Reference Include="Noobot.Core, Version=1.0.6112.34813, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Noobot.Core.1.0.6112.34813\lib\net451\Noobot.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SlackConnector, Version=3.0.6043.39508, Culture=neutral, processorArchitecture=MSIL">

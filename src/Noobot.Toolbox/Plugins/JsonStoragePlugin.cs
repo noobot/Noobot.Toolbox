@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Common.Logging;
 using Newtonsoft.Json;
 using Noobot.Core.Logging;
 using Noobot.Core.Plugins;
@@ -50,7 +51,7 @@ namespace Noobot.Toolbox.Plugins
             }
             catch (Exception ex)
             {
-                _log.Log($"Error loading file '{filePath}' - {ex}");
+                _log.Info($"Error loading file '{filePath}' - {ex}");
             }
 
             return result;
