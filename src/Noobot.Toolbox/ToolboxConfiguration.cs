@@ -22,6 +22,7 @@ namespace Noobot.Toolbox
             UseMiddleware<CalculatorMiddleware>();
             
             UsePlugin<StoragePlugin>();
+            UsePlugin<JsonStoragePlugin>();
             UsePlugin<SchedulePlugin>();
             UsePlugin<AdminPlugin>();
             UsePlugin<PingPlugin>();
