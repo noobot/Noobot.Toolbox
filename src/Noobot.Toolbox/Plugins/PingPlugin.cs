@@ -14,7 +14,7 @@ namespace Noobot.Toolbox.Plugins
         private readonly object _lock = new object();
         private bool _isRunning;
         private readonly INoobotCore _noobotCore;
-        private readonly StoragePlugin _storagePlugin;
+        private readonly JsonStoragePlugin _storagePlugin;
         private readonly HashSet<string> _userIds = new HashSet<string>();
         private const string _pingFilename = "pingy";
 
