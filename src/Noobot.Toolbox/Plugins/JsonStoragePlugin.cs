@@ -2,7 +2,6 @@
 using System.IO;
 using Common.Logging;
 using Newtonsoft.Json;
-using Noobot.Core.Logging;
 using Noobot.Core.Plugins;
 
 namespace Noobot.Toolbox.Plugins
