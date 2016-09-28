@@ -13,6 +13,7 @@ using NUnit.Framework;
 
 namespace Noobot.Toolbox.Tests.Integration.Plugins
 {
+    [Explicit]
     [TestFixture]
     public class SchedulerPluginTests
     {
