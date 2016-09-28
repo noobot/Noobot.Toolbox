@@ -59,7 +59,7 @@ namespace Noobot.Toolbox.Middleware
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{"admin help"},
+                    ValidHandles = new []{"admin help", "admin list"},
                     EvaluatorFunc = AdminHelpHandler,
                     Description = "[Requires authentication] Lists all available admin functions",
                     VisibleInHelp = false
@@ -106,7 +106,7 @@ namespace Noobot.Toolbox.Middleware
 
             foreach (var handlerMapping in HandlerMappings)
             {
-                string mappings = string.Join(" | ", handlerMapping.ValidHandles.Select(x => $"`{x}`"));
+                string mappings = string.Join(" | ", handlerMapping.ValidHandles.Select(x => $"{x}"));
                 yield return message.ReplyDirectlyToUser($"`{mappings}`    - {handlerMapping.Description}");
             }
         }
