@@ -56,6 +56,13 @@ namespace Noobot.Toolbox.Middleware
                     EvaluatorFunc = ChannelsHandler,
                     Description = "[Requires authentication] Will return all channels connected.",
                     VisibleInHelp = false
+                },
+                new HandlerMapping
+                {
+                    ValidHandles = new []{"admin help", "admin list"},
+                    EvaluatorFunc = AdminHelpHandler,
+                    Description = "[Requires authentication] Lists all available admin functions",
+                    VisibleInHelp = false
                 }
             };
         }
@@ -89,6 +96,21 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
+        private IEnumerable<ResponseMessage> AdminHelpHandler(IncomingMessage message, string matchedHandle)
+        {
+            if (!_adminPlugin.AuthenticateUser(message.UserId))
+            {
+                yield return message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function.");
+                yield break;
+            }
+
+            foreach (var handlerMapping in HandlerMappings)
+            {
+                string mappings = string.Join(" | ", handlerMapping.ValidHandles.Select(x => $"{x}"));
+                yield return message.ReplyDirectlyToUser($"`{mappings}`    - {handlerMapping.Description}");
+            }
+        }
+
         private IEnumerable<ResponseMessage> SchedulesListHandler(IncomingMessage message, string matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
@@ -98,7 +120,7 @@ namespace Noobot.Toolbox.Middleware
             }
 
             var schedules = _schedulePlugin.ListAllSchedules();
-            string[] scheduleStrings = schedules.Select((x, i) => x.ToString(i) + $" Channel: '{x.Channel}'.").ToArray();
+            string[] scheduleStrings = schedules.Select(x => $"Guid: '{x.Guid}' Channel: '{x.Channel}'.").ToArray();
 
             yield return message.ReplyToChannel("All Schedules:");
             yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
@@ -113,7 +135,7 @@ namespace Noobot.Toolbox.Middleware
             }
 
             var schedules = _schedulePlugin.ListAllSchedules();
-            _schedulePlugin.DeleteSchedules(schedules);
+            _schedulePlugin.DeleteSchedules(schedules.Select(x => x.Guid).ToArray());
 
             yield return message.ReplyToChannel("All schedules deleted");
         }

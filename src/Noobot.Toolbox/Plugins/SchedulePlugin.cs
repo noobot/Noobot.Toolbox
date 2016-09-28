@@ -1,59 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
-using Common.Logging;
-using FlatFile.Delimited.Attributes;
-using Noobot.Core;
-using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins;
 using Noobot.Core.Plugins.StandardPlugins;
-using SlackConnector.Models;
+using Noobot.Toolbox.Plugins.Scheduling;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.AdoJobStore;
 
 namespace Noobot.Toolbox.Plugins
 {
     public class SchedulePlugin : IPlugin
     {
         private string FileName { get; } = "schedules";
-        private readonly StoragePlugin _storagePlugin;
-        private readonly INoobotCore _noobotCore;
+        private readonly StructuremapJobFactory _jobFactory;
+        private readonly JsonStoragePlugin _storagePlugin;
         private readonly StatsPlugin _statsPlugin;
-        private readonly ILog _log;
         private readonly object _lock = new object();
         private readonly List<ScheduleEntry> _schedules = new List<ScheduleEntry>();
-        private readonly Timer _timer = new Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+        private IScheduler _scheduler;
 
-        public SchedulePlugin(StoragePlugin storagePlugin, INoobotCore noobotCore, StatsPlugin statsPlugin, ILog log)
+        public SchedulePlugin(StructuremapJobFactory jobFactory, JsonStoragePlugin storagePlugin, StatsPlugin statsPlugin)
         {
+            _jobFactory = jobFactory;
             _storagePlugin = storagePlugin;
-            _noobotCore = noobotCore;
             _statsPlugin = statsPlugin;
-            _log = log;
         }
 
         public void Start()
         {
             lock (_lock)
             {
-                ScheduleEntry[] schedules = _storagePlugin.ReadFile<ScheduleEntry>(FileName);
-                _schedules.AddRange(schedules);
+                _scheduler = StdSchedulerFactory.GetDefaultScheduler();
+                _scheduler.JobFactory = _jobFactory;
 
-                _timer.Elapsed += RunSchedules;
-                _timer.Start();
+                ScheduleEntry[] schedules = _storagePlugin.ReadFile<ScheduleEntry>(FileName);
+                foreach (var schedule in schedules)
+                {
+                    AddSchedule(schedule);
+                }
+
+                _scheduler.Start();
             }
         }
 
         public void Stop()
         {
-            _timer.Stop();
             Save();
         }
 
         public void AddSchedule(ScheduleEntry schedule)
         {
+            if (!CronExpression.IsValidExpression(schedule.CronSchedule))
+            {
+                _statsPlugin.IncrementState("schedules:invalidcron");
+                throw new InvalidConfigurationException("Cron expression is invalid");
+            }
+
             lock (_lock)
             {
+                schedule.Created = DateTime.Now;
+                ExecuteSchedule(schedule);
                 _schedules.Add(schedule);
+                _statsPlugin.IncrementState("schedules:added");
             }
 
             Save();
@@ -65,9 +74,7 @@ namespace Noobot.Toolbox.Plugins
             {
                 ScheduleEntry[] schedules = _schedules
                                                 .Where(x => x.Channel == channel)
-                                                .OrderBy(x => x.RunEvery)
-                                                .ThenByDescending(x => x.LastRun)
-                                                .ThenBy(x => x.Command)
+                                                .OrderBy(x => x.Command)
                                                 .ToArray();
                 return schedules;
             }
@@ -78,93 +85,47 @@ namespace Noobot.Toolbox.Plugins
             lock (_lock)
             {
                 ScheduleEntry[] schedules = _schedules
-                                                .OrderBy(x => x.RunEvery)
-                                                .ThenByDescending(x => x.LastRun)
-                                                .ThenBy(x => x.Command)
+                                                .OrderBy(x => x.Command)
                                                 .ToArray();
                 return schedules;
             }
         }
 
-        public void DeleteSchedules(ScheduleEntry[] scheduleEntries)
+        public void DeleteSchedules(Guid[] guids)
         {
             lock (_lock)
             {
-                foreach (ScheduleEntry scheduleEntry in scheduleEntries)
+                foreach (Guid guid in guids)
                 {
-                    _schedules.Remove(scheduleEntry);
+                    _scheduler.UnscheduleJob(new TriggerKey(guid.ToString(), "job"));
+
+                    ScheduleEntry toRemove = _schedules.First(x => x.Guid == guid);
+                    _schedules.Remove(toRemove);
+                    _statsPlugin.IncrementState("schedules:deleted");
                 }
             }
 
             Save();
         }
 
-        public void DeleteSchedule(ScheduleEntry scheduleEntry)
+        public void DeleteSchedule(Guid guid)
         {
-            DeleteSchedules(new[] { scheduleEntry });
-        }
-
-        private void RunSchedules(object sender, ElapsedEventArgs e)
-        {
-            lock (_lock)
-            {
-                _statsPlugin.RecordStat("Schedules:LastRun", DateTime.Now.ToString("G"));
-                _statsPlugin.RecordStat("Schedules:IsCurrentlyNight", IsCurrentlyNight().ToString());
-
-                foreach (var schedule in _schedules)
-                {
-                    ExecuteSchedule(schedule);
-                }
-            }
-
-            Save();
+            DeleteSchedules(new[] { guid });
         }
 
         private void ExecuteSchedule(ScheduleEntry schedule)
         {
-            if (ShouldRunSchedule(schedule))
-            {
-                _log.Info($"Running schedule: {schedule}");
+            IJobDetail job = JobBuilder.Create<ScheduledJob>()
+                            .UsingJobData("guid", schedule.Guid.ToString())
+                            .WithIdentity(schedule.Guid.ToString())
+                            .Build();
 
-                SlackChatHubType channelType = schedule.ChannelType == ResponseType.Channel
-                    ? SlackChatHubType.Channel
-                    : SlackChatHubType.DM;
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity(new TriggerKey(schedule.Guid.ToString(), "job"))
+                .WithCronSchedule(schedule.CronSchedule)
+                .Build();
 
-                var slackMessage = new SlackMessage
-                {
-                    Text = schedule.Command,
-                    User = new SlackUser { Id = schedule.UserId, Name = schedule.UserName },
-                    ChatHub = new SlackChatHub { Id = schedule.Channel, Type = channelType },
-                };
-
-                _noobotCore.MessageReceived(slackMessage);
-                schedule.LastRun = DateTime.Now;
-            }
-        }
-
-        private static bool ShouldRunSchedule(ScheduleEntry schedule)
-        {
-            bool shouldRun = false;
-            if (!schedule.LastRun.HasValue)
-            {
-                shouldRun = true;
-            }
-            else if (schedule.LastRun + schedule.RunEvery < DateTime.Now)
-            {
-                shouldRun = true;
-            }
-
-            if (shouldRun & schedule.RunOnlyAtNight)
-            {
-                shouldRun = IsCurrentlyNight();
-            }
-
-            return shouldRun;
-        }
-
-        private static bool IsCurrentlyNight()
-        {
-            return DateTime.Now.TimeOfDay > new TimeSpan(20, 00, 00) || DateTime.Now.TimeOfDay < TimeSpan.FromHours(5);
+            _scheduler.ScheduleJob(job, trigger);
         }
 
         private void Save()
@@ -173,36 +134,6 @@ namespace Noobot.Toolbox.Plugins
             {
                 _storagePlugin.SaveFile(FileName, _schedules.ToArray());
                 _statsPlugin.RecordStat("Schedules:Active", _schedules.Count);
-            }
-        }
-
-        [DelimitedFile(Delimiter = ";", Quotes = "\"")]
-        public class ScheduleEntry
-        {
-            [DelimitedField(1, NullValue = "=Null")]
-            public DateTime? LastRun { get; set; }
-            [DelimitedField(2)]
-            public TimeSpan RunEvery { get; set; }
-            [DelimitedField(3)]
-            public string Command { get; set; }
-            [DelimitedField(4)]
-            public string Channel { get; set; }
-            [DelimitedField(5)]
-            public ResponseType ChannelType { get; set; }
-            [DelimitedField(6)]
-            public string UserId { get; set; }
-            [DelimitedField(7)]
-            public string UserName { get; set; }
-            [DelimitedField(8)]
-            public bool RunOnlyAtNight { get; set; }
-
-            public override string ToString()
-            {
-                return $"Running command `'{Command}'` every `'{RunEvery}'`. Last run at `'{LastRun}'`. Runs only at night: `{RunOnlyAtNight}`.";
-            }
-            public string ToString(int id)
-            {
-                return $"Id: `{id}`. {this}";
             }
         }
     }

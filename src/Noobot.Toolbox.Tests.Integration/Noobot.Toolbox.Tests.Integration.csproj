@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{224C95BA-B143-42DC-947D-1592C9DB0766}</ProjectGuid>
+    <ProjectGuid>{23C630BB-10EE-40F0-A222-B422B0DAF56C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Noobot.Toolbox</RootNamespace>
-    <AssemblyName>Noobot.Toolbox</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <RootNamespace>Noobot.Toolbox.Tests.Integration</RootNamespace>
+    <AssemblyName>Noobot.Toolbox.Tests.Integration</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,16 +22,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
@@ -52,8 +46,12 @@
       <HintPath>..\..\packages\Noobot.Core.1.0.6112.34813\lib\net451\Noobot.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Quartz, Version=2.4.1.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Quartz.2.4.1\lib\net40\Quartz.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.4.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.3.4.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SlackConnector, Version=3.0.6043.39508, Culture=neutral, processorArchitecture=MSIL">
@@ -76,48 +74,37 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="FlickrNet, Version=3.17.0.0, Culture=neutral, PublicKeyToken=2491df59efa5d132, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\FlickrNet.3.17.0\lib\net20\FlickrNet.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RestSharp.105.2.3\lib\net451\RestSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="websocket-sharp-with-proxy-support, Version=1.0.2.28248, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
       <HintPath>..\..\packages\websocket-sharp-with-proxy-support.1.9.1\lib\net35-client\websocket-sharp-with-proxy-support.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xFunc.Maths, Version=2.15.16.0, Culture=neutral, PublicKeyToken=a8643d6339aa5b3b, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xFunc.Maths.2.15.16\lib\net451\xFunc.Maths.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Plugins\Scheduling\ScheduledJob.cs" />
-    <Compile Include="Plugins\Scheduling\ScheduleEntry.cs" />
-    <Compile Include="Plugins\Scheduling\StructuremapJobFactory.cs" />
-    <Compile Include="Plugins\SchedulePlugin.cs" />
-    <Compile Include="ToolboxConfiguration.cs" />
-    <Compile Include="Middleware\AdminMiddleware.cs" />
-    <Compile Include="Middleware\AutoResponderMiddleware.cs" />
-    <Compile Include="Middleware\CalculatorMiddleware.cs" />
-    <Compile Include="Middleware\FlickrMiddleware.cs" />
-    <Compile Include="Middleware\JokeMiddleware.cs" />
-    <Compile Include="Middleware\PingMiddleware.cs" />
-    <Compile Include="Middleware\ScheduleMiddleware.cs" />
-    <Compile Include="Middleware\WelcomeMiddleware.cs" />
-    <Compile Include="Middleware\YieldTestMiddleware.cs" />
-    <Compile Include="Plugins\AdminPlugin.cs" />
-    <Compile Include="Plugins\PingPlugin.cs" />
-    <Compile Include="Plugins\JsonStoragePlugin.cs" />
+    <Compile Include="Configuration\ConfigReader.cs" />
+    <Compile Include="NoobotWrapper.cs" />
+    <Compile Include="Plugins\SchedulerPluginTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NoobotDemo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="app.config" />
+    <None Include="Configuration\config.default.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Noobot.Toolbox\Noobot.Toolbox.csproj">
+      <Project>{224c95ba-b143-42dc-947d-1592c9db0766}</Project>
+      <Name>Noobot.Toolbox</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST $(ProjectDir)configuration\config.json xcopy $(ProjectDir)configuration\config.json $(TargetDir)configuration\ /Y
+
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

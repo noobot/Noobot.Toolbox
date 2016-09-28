@@ -1,40 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
+using Noobot.Core.Plugins.StandardPlugins;
 using Noobot.Toolbox.Plugins;
+using Noobot.Toolbox.Plugins.Scheduling;
+using Quartz;
 
 namespace Noobot.Toolbox.Middleware
 {
     public class ScheduleMiddleware : MiddlewareBase
     {
         private readonly SchedulePlugin _schedulePlugin;
+        private readonly StatsPlugin _statsPlugin;
+        private static readonly Regex Regex = new Regex(@"^\'(.*?)\'(.*?)$", RegexOptions.Compiled);
 
-        public ScheduleMiddleware(IMiddleware next, SchedulePlugin schedulePlugin) : base(next)
+        public ScheduleMiddleware(IMiddleware next, SchedulePlugin schedulePlugin, StatsPlugin statsPlugin) : base(next)
         {
             _schedulePlugin = schedulePlugin;
+            _statsPlugin = statsPlugin;
 
             HandlerMappings = new[]
             {
                 new HandlerMapping
                 {
                     ValidHandles = new [] { "schedule hourly"},
-                    Description = "Schedule a command to execute every hour on the current channel. Usage: _schedule hourly @{bot} tell me a joke_",
+                    Description = "Schedule a command to execute every hour on the current channel. Usage: `@{bot} schedule hourly @{bot} tell me a joke`",
                     EvaluatorFunc = HourlyHandler,
                 },
                 new HandlerMapping
                 {
                     ValidHandles = new [] { "schedule daily"},
-                    Description = "Schedule a command to execute every day on the current channel. Usage: _schedule daily @{bot} tell me a joke_",
+                    Description = "Schedule a command to execute every day on the current channel. Usage: `@{bot} schedule daily @{bot} tell me a joke`",
                     EvaluatorFunc = DayHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule nightly"},
-                    Description = "Schedule a command to execute every day on the current channel. Usage: _schedule nightly @{bot} tell me a joke_",
-                    EvaluatorFunc = NightlyHandler,
+                    ValidHandles = new [] { "schedule cronjob"},
+                    Description = "Schedule a cron job for this channel. Usage: `@{bot} schedule cronjob '0 15 10 * * ?' @{bot} tell me a joke`",
+                    EvaluatorFunc = CronHandler,
                 },
                 new HandlerMapping
                 {
@@ -45,7 +52,7 @@ namespace Noobot.Toolbox.Middleware
                 new HandlerMapping
                 {
                     ValidHandles = new [] { "schedule delete"},
-                    Description = "Delete a schedule in this channel. You must enter a valid {id}",
+                    Description = "Delete a schedule in this channel. You must enter a valid {guid}",
                     EvaluatorFunc = DeleteHandlerForChannel,
                 },
             };
@@ -53,28 +60,77 @@ namespace Noobot.Toolbox.Middleware
 
         private IEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, string matchedHandle)
         {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromHours(1), false);
+            int minutesPastTheHour = DateTime.Now.Minute;
+            string schedule = $"0 {minutesPastTheHour} */1 * * ?";
+            string command = message.TargetedText.Substring(matchedHandle.Length).Trim();
+
+            yield return CreateSchedule(message, command, schedule);
         }
 
         private IEnumerable<ResponseMessage> DayHandler(IncomingMessage message, string matchedHandle)
         {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromDays(1), false);
+            int minutesPastTheHour = DateTime.Now.Minute - 1;
+            int hourOfDay = DateTime.Now.Hour;
+            string schedule = $"0 {minutesPastTheHour} {hourOfDay} * * ?";
+            string command = message.TargetedText.Substring(matchedHandle.Length).Trim();
+
+            yield return CreateSchedule(message, command, schedule);
         }
 
-        private IEnumerable<ResponseMessage> NightlyHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> CronHandler(IncomingMessage message, string matchedHandle)
         {
-            yield return CreateSchedule(message, matchedHandle, TimeSpan.FromDays(1), true);
+            string cronJob = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            Match regexMatch = Regex.Match(cronJob);
+
+            if (!regexMatch.Success)
+            {
+                yield return message.ReplyToChannel($"Error while parsing cron job. Your command should match something like `@{message.BotName} schedule cronjob '0 15 10 * * ?' @{message.BotName} tell me a joke``");
+                yield break;
+            }
+
+            string schedule = regexMatch.Groups[1].Value.Trim();
+            string command = regexMatch.Groups[2].Value.Trim();
+
+            yield return CreateSchedule(message, command, schedule);
+        }
+
+        private ResponseMessage CreateSchedule(IncomingMessage message, string command, string cronSchedule)
+        {
+            var schedule = new ScheduleEntry
+            {
+                Guid = Guid.NewGuid(),
+                Channel = message.Channel,
+                ChannelType = message.ChannelType,
+                Command = command,
+                CronSchedule = cronSchedule,
+                UserId = message.UserId,
+                UserName = message.Username,
+                Created = DateTime.Now
+            };
+
+            if (!CronExpression.IsValidExpression(cronSchedule))
+            {
+                return message.ReplyToChannel($"Unknown cron schedule `'{cronSchedule}'`");
+            }
+
+            if (string.IsNullOrEmpty(schedule.Command))
+            {
+                return message.ReplyToChannel("Please enter a command to be scheduled.");
+            }
+
+            _schedulePlugin.AddSchedule(schedule);
+            return message.ReplyToChannel($"Schedule created for command '{schedule.Command}'.");
         }
 
         private IEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, string matchedHandle)
         {
-            SchedulePlugin.ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
+            ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
 
             if (schedules.Any())
             {
                 yield return message.ReplyToChannel("Schedules for channel:");
 
-                string[] scheduleStrings = schedules.Select((x, i) => x.ToString(i)).ToArray();
+                string[] scheduleStrings = schedules.Select(x => x.ToString()).ToArray();
                 yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
             }
             else
@@ -86,63 +142,26 @@ namespace Noobot.Toolbox.Middleware
         private IEnumerable<ResponseMessage> DeleteHandlerForChannel(IncomingMessage message, string matchedHandle)
         {
             string idString = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            Guid guid;
 
-            int? id = ConvertToInt(idString);
-
-            if (id.HasValue)
+            if (Guid.TryParse(idString, out guid))
             {
-                SchedulePlugin.ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
+                ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
+                ScheduleEntry scheduleToDelete = schedules.FirstOrDefault(x => x.Guid == guid);
 
-                if (id < 0 || id > (schedules.Length - 1))
+                if (scheduleToDelete == null)
                 {
-                    yield return message.ReplyToChannel($"Woops, unable to delete schedule with id of `{id.Value}`");
+                    yield return message.ReplyToChannel($"Unable to find schedule with GUID: `'{guid}'`");
                 }
                 else
                 {
-                    _schedulePlugin.DeleteSchedule(schedules[id.Value]);
-                    yield return message.ReplyToChannel($"Removed schedule: {schedules[id.Value]}");
+                    _schedulePlugin.DeleteSchedule(guid);
+                    yield return message.ReplyToChannel($"Removed schedule: `{scheduleToDelete}`");
                 }
             }
             else
             {
-                yield return message.ReplyToChannel($"Invalid id entered. Try using `schedule list`. ({idString})");
-            }
-        }
-
-        private static int? ConvertToInt(string value)
-        {
-            try
-            {
-                return Convert.ToInt32(value);
-            }
-            catch (FormatException)
-            {
-                return null;
-            }
-        }
-
-        private ResponseMessage CreateSchedule(IncomingMessage message, string matchedHandle, TimeSpan timeSpan, bool runOnlyAtNight)
-        {
-            var schedule = new SchedulePlugin.ScheduleEntry
-            {
-                Channel = message.Channel,
-                ChannelType = message.ChannelType,
-                Command = message.TargetedText.Substring(matchedHandle.Length).Trim(),
-                RunEvery = timeSpan,
-                UserId = message.UserId,
-                UserName = message.Username,
-                LastRun = DateTime.Now,
-                RunOnlyAtNight = runOnlyAtNight
-            };
-
-            if (string.IsNullOrEmpty(schedule.Command))
-            {
-                return message.ReplyToChannel("Please enter a command to be scheduled.");
-            }
-            else
-            {
-                _schedulePlugin.AddSchedule(schedule);
-                return message.ReplyToChannel($"Schedule created for command '{schedule.Command}'.");
+                yield return message.ReplyToChannel($"Invalid id entered. Try using `schedule list`. (`{idString}`)");
             }
         }
     }

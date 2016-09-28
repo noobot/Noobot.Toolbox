@@ -21,7 +21,6 @@ namespace Noobot.Toolbox
             UseMiddleware<FlickrMiddleware>();
             UseMiddleware<CalculatorMiddleware>();
             
-            UsePlugin<StoragePlugin>();
             UsePlugin<JsonStoragePlugin>();
             UsePlugin<SchedulePlugin>();
             UsePlugin<AdminPlugin>();
