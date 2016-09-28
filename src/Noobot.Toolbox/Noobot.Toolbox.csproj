@@ -94,7 +94,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Middleware\Scheduling\StructuremapJobFactory.cs" />
+    <Compile Include="Plugins\Scheduling\ScheduledJob.cs" />
+    <Compile Include="Plugins\Scheduling\ScheduleEntry.cs" />
+    <Compile Include="Plugins\Scheduling\StructuremapJobFactory.cs" />
     <Compile Include="Plugins\SchedulePlugin.cs" />
     <Compile Include="ToolboxConfiguration.cs" />
     <Compile Include="Middleware\AdminMiddleware.cs" />
