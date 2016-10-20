@@ -46,6 +46,7 @@ namespace Noobot.Toolbox.Plugins
 
         public void Stop()
         {
+            _scheduler.Shutdown(false);
             Save();
         }
 
