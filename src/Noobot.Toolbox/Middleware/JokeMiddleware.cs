@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using Flurl;
+using Flurl.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
-using RestSharp;
 
 namespace Noobot.Toolbox.Middleware
 {
@@ -33,37 +34,35 @@ namespace Noobot.Toolbox.Middleware
         {
             yield return message.IndicateTypingOnChannel();
 
-            IRestResponse jokeResponse = new Random().Next(0, 100) < 80 ? GetTambalJoke() : GetMommaJoke();
-            if (jokeResponse.StatusCode == HttpStatusCode.OK)
-            {
-                _statsPlugin.IncrementState("Jokes:Told");
-                var joke = JsonConvert.DeserializeObject<JokeContainer>(jokeResponse.Content);
+            var jokeResponse = new Random().Next(0, 100) < 80 ? GetChuckNorrisJoke() : GetMommaJoke();
+         
+            _statsPlugin.IncrementState("Jokes:Told");
+            var jokeString = $"{{ {jokeResponse.SelectToken("$..joke").Parent} }}";
+            var joke = JsonConvert.DeserializeObject<JokeContainer>(jokeString);
 
-                yield return message.ReplyToChannel(joke.Joke);
-            }
-            else
-            {
-                _statsPlugin.IncrementState("Jokes:Failed");
-                yield return message.ReplyToChannel($"Dam, I can't think of one. [{jokeResponse.StatusCode}]");
-            }
+            yield return message.ReplyToChannel(joke.Joke);
         }
 
-        private IRestResponse GetTambalJoke()
+        private JObject GetChuckNorrisJoke()
         {
-            var client = new RestClient("http://tambal.azurewebsites.net");
-            var request = new RestRequest("/joke/random", Method.GET);
-            return client.Execute(request);
+            return "http://api.icndb.com"
+                .AppendPathSegment("/jokes/random")
+                .GetJsonAsync<JObject>()
+                .GetAwaiter()
+                .GetResult();
         }
 
-        private IRestResponse GetMommaJoke()
+        private JObject GetMommaJoke()
         {
-            var client = new RestClient("http://api.yomomma.info");
-            var request = new RestRequest("/", Method.GET);
-            return client.Execute(request);
+            return "http://api.yomomma.info"
+                .GetJsonAsync<JObject>()
+                .GetAwaiter()
+                .GetResult();
         }
 
         private class JokeContainer
         {
+            [JsonProperty("joke", Required = Required.Always)]
             public string Joke { get; set; }
         }
     }
