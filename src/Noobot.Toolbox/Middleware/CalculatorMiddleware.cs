@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
@@ -20,14 +21,14 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new []{"calc"},
+                    ValidHandles = ExactMatchHandle.For("calc"),
                     Description = "Calculate mathematical expressions - usage: calc ((1+2)*3)/4",
                     EvaluatorFunc = CalculateHandler,
                     MessageShouldTargetBot = false
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{""},
+                    ValidHandles = new IValidHandle[] { new AlwaysMatchHandle() },
                     Description = "Try to calculate mathematical expressions without the 'calc' prefix - usage: ((1+2)*3)/4",
                     EvaluatorFunc = CalculateHandler,
                     MessageShouldTargetBot = false,
@@ -36,13 +37,13 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> CalculateHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> CalculateHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             string response = string.Empty;
 
             if (matchedHandle != null)
             {
-                string expression = message.FullText.Substring(matchedHandle.Length).Trim();
+                string expression = message.FullText.Substring(matchedHandle.HandleHelpText.Length).Trim();
                 Parser parser = new Parser();
 
                 try
@@ -53,7 +54,7 @@ namespace Noobot.Toolbox.Middleware
                 }
                 catch (Exception e)
                 {
-                    bool showErrors = !string.IsNullOrEmpty(matchedHandle);
+                    bool showErrors = !string.IsNullOrEmpty(matchedHandle.HandleHelpText);
 
                     if (showErrors)
                     {

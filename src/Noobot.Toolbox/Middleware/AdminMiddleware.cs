@@ -3,6 +3,7 @@ using System.Linq;
 using Common.Logging;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Toolbox.Plugins;
@@ -31,35 +32,35 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "admin pin" },
+                    ValidHandles = ExactMatchHandle.For("admin pin"),
                     EvaluatorFunc = PinHandler,
                     Description = "This function is used to authenticate a user as admin",
                     VisibleInHelp = false
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "admin schedules list" },
+                    ValidHandles = ExactMatchHandle.For("admin schedules list"),
                     EvaluatorFunc = SchedulesListHandler,
                     Description = "[Requires authentication] Will return a list of all schedules.",
                     VisibleInHelp = false
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "admin schedules delete" },
+                    ValidHandles = ExactMatchHandle.For("admin schedules delete"),
                     EvaluatorFunc = DeleteSchedulesHandler,
                     Description = "[Requires authentication] This will delete all schedules.",
                     VisibleInHelp = false
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "admin channels" },
+                    ValidHandles = ExactMatchHandle.For("admin channels"),
                     EvaluatorFunc = ChannelsHandler,
                     Description = "[Requires authentication] Will return all channels connected.",
                     VisibleInHelp = false
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{"admin help", "admin list"},
+                    ValidHandles = ExactMatchHandle.For("admin help", "admin list"),
                     EvaluatorFunc = AdminHelpHandler,
                     Description = "[Requires authentication] Lists all available admin functions",
                     VisibleInHelp = false
@@ -67,7 +68,7 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> PinHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> PinHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AdminModeEnabled())
             {
@@ -75,7 +76,7 @@ namespace Noobot.Toolbox.Middleware
                 yield break;
             }
 
-            string pinString = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            string pinString = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
             int pin;
             if (int.TryParse(pinString, out pin))
@@ -96,7 +97,7 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> AdminHelpHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> AdminHelpHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
@@ -111,7 +112,7 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> SchedulesListHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> SchedulesListHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
@@ -126,7 +127,7 @@ namespace Noobot.Toolbox.Middleware
             yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
         }
 
-        private IEnumerable<ResponseMessage> DeleteSchedulesHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> DeleteSchedulesHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
@@ -140,7 +141,7 @@ namespace Noobot.Toolbox.Middleware
             yield return message.ReplyToChannel("All schedules deleted");
         }
 
-        private IEnumerable<ResponseMessage> ChannelsHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> ChannelsHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {

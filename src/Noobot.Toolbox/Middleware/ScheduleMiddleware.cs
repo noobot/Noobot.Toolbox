@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
-using Noobot.Core.Plugins.StandardPlugins;
 using Noobot.Toolbox.Plugins;
 using Noobot.Toolbox.Plugins.Scheduling;
 using Quartz;
@@ -15,72 +15,70 @@ namespace Noobot.Toolbox.Middleware
     public class ScheduleMiddleware : MiddlewareBase
     {
         private readonly SchedulePlugin _schedulePlugin;
-        private readonly StatsPlugin _statsPlugin;
-        private static readonly Regex Regex = new Regex(@"^\'(.*?)\'(.*?)$", RegexOptions.Compiled);
+        private static readonly Regex CronFormat = new Regex(@"^\'(.*?)\'(.*?)$", RegexOptions.Compiled);
 
-        public ScheduleMiddleware(IMiddleware next, SchedulePlugin schedulePlugin, StatsPlugin statsPlugin) : base(next)
+        public ScheduleMiddleware(IMiddleware next, SchedulePlugin schedulePlugin) : base(next)
         {
             _schedulePlugin = schedulePlugin;
-            _statsPlugin = statsPlugin;
 
             HandlerMappings = new[]
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule hourly"},
+                    ValidHandles = ExactMatchHandle.For("schedule hourly"),
                     Description = "Schedule a command to execute every hour on the current channel. Usage: `@{bot} schedule hourly @{bot} tell me a joke`",
                     EvaluatorFunc = HourlyHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule daily"},
+                    ValidHandles = ExactMatchHandle.For("schedule daily"),
                     Description = "Schedule a command to execute every day on the current channel. Usage: `@{bot} schedule daily @{bot} tell me a joke`",
                     EvaluatorFunc = DayHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule cronjob"},
+                    ValidHandles = ExactMatchHandle.For("schedule cronjob"),
                     Description = "Schedule a cron job for this channel. Usage: `@{bot} schedule cronjob '0 15 10 * * ?' @{bot} tell me a joke`",
                     EvaluatorFunc = CronHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule list"},
+                    ValidHandles = ExactMatchHandle.For("schedule list"),
                     Description = "List all schedules on the current channel",
                     EvaluatorFunc = ListHandlerForChannel,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "schedule delete"},
+                    ValidHandles = ExactMatchHandle.For("schedule delete"),
                     Description = "Delete a schedule in this channel. You must enter a valid {guid}",
                     EvaluatorFunc = DeleteHandlerForChannel,
                 },
             };
         }
 
-        private IEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             int minutesPastTheHour = DateTime.Now.Minute;
             string schedule = $"0 {minutesPastTheHour} */1 * * ?";
-            string command = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            string command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
             yield return CreateSchedule(message, command, schedule);
         }
 
-        private IEnumerable<ResponseMessage> DayHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> DayHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             int minutesPastTheHour = DateTime.Now.Minute - 1;
             int hourOfDay = DateTime.Now.Hour;
             string schedule = $"0 {minutesPastTheHour} {hourOfDay} * * ?";
-            string command = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            string command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
             yield return CreateSchedule(message, command, schedule);
         }
 
-        private IEnumerable<ResponseMessage> CronHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> CronHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string cronJob = message.TargetedText.Substring(matchedHandle.Length).Trim();
-            Match regexMatch = Regex.Match(cronJob);
+            string cronJob = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
+            Match regexMatch = CronFormat.Match(cronJob);
 
             if (!regexMatch.Success)
             {
@@ -122,7 +120,7 @@ namespace Noobot.Toolbox.Middleware
             return message.ReplyToChannel($"Schedule created for command '{schedule.Command}'.");
         }
 
-        private IEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
         {
             ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
 
@@ -139,9 +137,9 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> DeleteHandlerForChannel(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> DeleteHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string idString = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            string idString = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
             Guid guid;
 
             if (Guid.TryParse(idString, out guid))

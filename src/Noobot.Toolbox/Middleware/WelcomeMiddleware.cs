@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
@@ -19,14 +20,14 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new []{"hi", "hey", "hello", "wuzzup"},
+                    ValidHandles = ExactMatchHandle.For("hi", "hey", "hello", "wuzzup"),
                     Description = "Try saying hi and see what happens",
                     EvaluatorFunc = WelcomeHandler
                 }
             };
         }
 
-        private IEnumerable<ResponseMessage> WelcomeHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> WelcomeHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             _statsPlugin.IncrementState("Hello");
 

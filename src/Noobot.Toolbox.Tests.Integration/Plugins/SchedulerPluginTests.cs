@@ -8,7 +8,6 @@ using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Toolbox.Middleware;
 using Noobot.Toolbox.Plugins;
 using Noobot.Toolbox.Plugins.Scheduling;
-using Noobot.Toolbox.Tests.Integration.Configuration;
 using NUnit.Framework;
 
 namespace Noobot.Toolbox.Tests.Integration.Plugins

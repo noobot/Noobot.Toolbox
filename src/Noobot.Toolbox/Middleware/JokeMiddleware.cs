@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
@@ -21,14 +22,14 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "joke", "tell me a joke"},
+                    ValidHandles = ExactMatchHandle.For("joke", "tell me a joke"),
                     Description = "Tells a random joke",
                     EvaluatorFunc = JokeHandler
                 }
             };
         }
 
-        private IEnumerable<ResponseMessage> JokeHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> JokeHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             yield return message.IndicateTypingOnChannel();
 

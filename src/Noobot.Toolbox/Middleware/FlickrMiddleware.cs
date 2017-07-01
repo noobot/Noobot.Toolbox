@@ -4,6 +4,7 @@ using System.Linq;
 using FlickrNet;
 using Noobot.Core.Configuration;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
@@ -27,16 +28,16 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new [] { "flickr", "pic"},
+                    ValidHandles = ExactMatchHandle.For( "flickr", "pic"),
                     Description = "Finds a pics from flickr - usage: /flickr birds",
                     EvaluatorFunc = FlickrHandler,
                 }
             };
         }
 
-        private IEnumerable<ResponseMessage> FlickrHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> FlickrHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string searchTerm = message.TargetedText.Substring(matchedHandle.Length).Trim();
+            string searchTerm = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
             if (string.IsNullOrEmpty(searchTerm))
             {
@@ -56,7 +57,7 @@ namespace Noobot.Toolbox.Middleware
                 {
                     var flickr = new Flickr(apiKey);
 
-                    var options = new PhotoSearchOptions { Tags = searchTerm, PerPage = 50, Page = 1};
+                    var options = new PhotoSearchOptions { Tags = searchTerm, PerPage = 50, Page = 1 };
                     PhotoCollection photos = flickr.PhotosSearch(options);
 
                     if (photos.Any())

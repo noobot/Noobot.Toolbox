@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 
@@ -15,14 +16,14 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new[] { "yield test" },
+                    ValidHandles = ExactMatchHandle.For("yield test"),
                     EvaluatorFunc = YieldTest,
                     Description = "Just tests delayed messages"
                 }
             };
         }
 
-        private IEnumerable<ResponseMessage> YieldTest(IncomingMessage incomingMessage, string matchedHandle)
+        private IEnumerable<ResponseMessage> YieldTest(IncomingMessage incomingMessage, IValidHandle matchedHandle)
         {
             for (int i = 0; i < 10; i++)
             {

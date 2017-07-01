@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Noobot.Core.MessagingPipeline.Middleware;
+using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Toolbox.Plugins;
@@ -18,32 +19,32 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "ping stop", "stop pinging me" },
+                    ValidHandles = ExactMatchHandle.For("ping stop", "stop pinging me"),
                     Description = "Stops sending you pings",
                     EvaluatorFunc = StopPingingHandler
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "ping list" },
+                    ValidHandles = ExactMatchHandle.For("ping list"),
                     Description = "Lists all of the people currently being pinged",
                     EvaluatorFunc = ListPingHandler
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = new []{ "ping me" },
+                    ValidHandles = ExactMatchHandle.For("ping me"),
                     Description = "Sends you a ping about every second",
                     EvaluatorFunc = PingHandler
                 },
             };
         }
 
-        private IEnumerable<ResponseMessage> PingHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> PingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             yield return message.ReplyToChannel($"Ok, I will start pinging @{message.Username}");
             _pingPlugin.StartPingingUser(message.UserId);
         }
 
-        private IEnumerable<ResponseMessage> StopPingingHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> StopPingingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (_pingPlugin.StopPingingUser(message.UserId))
             {
@@ -55,7 +56,7 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> ListPingHandler(IncomingMessage message, string matchedHandle)
+        private IEnumerable<ResponseMessage> ListPingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             string[] users = _pingPlugin.ListPingedUsers();
 

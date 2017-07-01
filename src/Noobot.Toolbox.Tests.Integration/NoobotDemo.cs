@@ -2,8 +2,8 @@
 using System.IO;
 using System.Threading;
 using Noobot.Core;
+using Noobot.Core.Configuration;
 using Noobot.Core.DependencyResolution;
-using Noobot.Toolbox.Tests.Integration.Configuration;
 using NUnit.Framework;
 
 namespace Noobot.Toolbox.Tests.Integration
