@@ -74,9 +74,9 @@ namespace Noobot.Toolbox.Plugins
             lock (_lock)
             {
                 ScheduleEntry[] schedules = _schedules
-                                                .Where(x => x.Channel == channel)
-                                                .OrderBy(x => x.Command)
-                                                .ToArray();
+                    .Where(x => x.Channel == channel)
+                    .OrderBy(x => x.Command)
+                    .ToArray();
                 return schedules;
             }
         }
@@ -86,8 +86,8 @@ namespace Noobot.Toolbox.Plugins
             lock (_lock)
             {
                 ScheduleEntry[] schedules = _schedules
-                                                .OrderBy(x => x.Command)
-                                                .ToArray();
+                    .OrderBy(x => x.Command)
+                    .ToArray();
                 return schedules;
             }
         }
@@ -117,9 +117,9 @@ namespace Noobot.Toolbox.Plugins
         private void ExecuteSchedule(ScheduleEntry schedule)
         {
             IJobDetail job = JobBuilder.Create<ScheduledJob>()
-                            .UsingJobData("guid", schedule.Guid.ToString())
-                            .WithIdentity(schedule.Guid.ToString())
-                            .Build();
+                .UsingJobData("guid", schedule.Guid.ToString())
+                .WithIdentity(schedule.Guid.ToString())
+                .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
                 .WithIdentity(new TriggerKey(schedule.Guid.ToString(), "job"))

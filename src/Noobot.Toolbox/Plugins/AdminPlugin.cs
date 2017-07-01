@@ -57,7 +57,10 @@ namespace Noobot.Toolbox.Plugins
                 {
                     lock (_lock)
                     {
-                        _admins.Add(userId);
+                        if (!_admins.Contains(userId))
+                        {
+                            _admins.Add(userId);
+                        }
                     }
                 }
             }

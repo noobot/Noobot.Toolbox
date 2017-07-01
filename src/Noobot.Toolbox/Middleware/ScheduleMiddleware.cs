@@ -25,19 +25,19 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = ExactMatchHandle.For("schedule hourly"),
+                    ValidHandles = StartsWithHandle.For("schedule hourly"),
                     Description = "Schedule a command to execute every hour on the current channel. Usage: `@{bot} schedule hourly @{bot} tell me a joke`",
                     EvaluatorFunc = HourlyHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = ExactMatchHandle.For("schedule daily"),
+                    ValidHandles = StartsWithHandle.For("schedule daily"),
                     Description = "Schedule a command to execute every day on the current channel. Usage: `@{bot} schedule daily @{bot} tell me a joke`",
                     EvaluatorFunc = DayHandler,
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = ExactMatchHandle.For("schedule cronjob"),
+                    ValidHandles = StartsWithHandle.For("schedule cronjob"),
                     Description = "Schedule a cron job for this channel. Usage: `@{bot} schedule cronjob '0 15 10 * * ?' @{bot} tell me a joke`",
                     EvaluatorFunc = CronHandler,
                 },
@@ -49,7 +49,7 @@ namespace Noobot.Toolbox.Middleware
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = ExactMatchHandle.For("schedule delete"),
+                    ValidHandles = StartsWithHandle.For("schedule delete"),
                     Description = "Delete a schedule in this channel. You must enter a valid {guid}",
                     EvaluatorFunc = DeleteHandlerForChannel,
                 },
