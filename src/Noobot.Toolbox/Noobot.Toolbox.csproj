@@ -64,9 +64,6 @@
     <Reference Include="Quartz, Version=2.4.1.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Quartz.2.4.1\lib\net40\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
-    </Reference>
     <Reference Include="SlackConnector, Version=3.1.236.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SlackConnector.3.1.236\lib\net461\SlackConnector.dll</HintPath>
     </Reference>
