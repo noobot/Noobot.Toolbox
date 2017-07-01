@@ -2,12 +2,7 @@
 using System.IO;
 using System.Threading;
 using Noobot.Core;
-using Noobot.Core.Configuration;
 using Noobot.Core.DependencyResolution;
-using Noobot.Core.MessagingPipeline.Response;
-using Noobot.Toolbox.Middleware;
-using Noobot.Toolbox.Plugins;
-using Noobot.Toolbox.Plugins.Scheduling;
 using Noobot.Toolbox.Tests.Integration.Configuration;
 using NUnit.Framework;
 
