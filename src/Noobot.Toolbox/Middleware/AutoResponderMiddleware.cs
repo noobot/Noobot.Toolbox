@@ -18,7 +18,8 @@ namespace Noobot.Toolbox.Middleware
                     Description = "Annoys the heck out of everyone",
                     EvaluatorFunc = AutoResponseHandler,
                     MessageShouldTargetBot = false,
-                    ShouldContinueProcessing = true
+                    ShouldContinueProcessing = true,
+                    VisibleInHelp = false
                 }
             };
         }

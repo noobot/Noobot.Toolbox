@@ -32,7 +32,8 @@ namespace Noobot.Toolbox.Middleware
                     Description = "Try to calculate mathematical expressions without the 'calc' prefix - usage: ((1+2)*3)/4",
                     EvaluatorFunc = CalculateHandler,
                     MessageShouldTargetBot = false,
-                    ShouldContinueProcessing = true
+                    ShouldContinueProcessing = true,
+                    VisibleInHelp = false
                 }
             };
         }
