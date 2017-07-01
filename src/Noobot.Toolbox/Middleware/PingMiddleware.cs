@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -60,8 +61,15 @@ namespace Noobot.Toolbox.Middleware
         {
             string[] users = _pingPlugin.ListPingedUsers();
 
-            yield return message.ReplyDirectlyToUser("I am currently pinging:");
-            yield return message.ReplyDirectlyToUser(">>>" + string.Join("\n", users));
+            if (users.Any())
+            {
+                yield return message.ReplyDirectlyToUser("I am currently pinging:");
+                yield return message.ReplyDirectlyToUser(">>>" + string.Join("\n", users));
+            }
+            else
+            {
+                yield return message.ReplyDirectlyToUser("I am not currently pinging anyone.");
+            }
         }
     }
 }
