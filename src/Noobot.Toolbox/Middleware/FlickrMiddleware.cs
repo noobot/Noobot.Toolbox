@@ -28,8 +28,8 @@ namespace Noobot.Toolbox.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = ExactMatchHandle.For( "flickr", "pic"),
-                    Description = "Finds a pics from flickr - usage: /flickr birds",
+                    ValidHandles = StartsWithHandle.For("flickr", "pic"),
+                    Description = "Finds a pics from flickr - usage: @{bot} flickr birds",
                     EvaluatorFunc = FlickrHandler,
                 }
             };
