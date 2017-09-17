@@ -10,8 +10,9 @@ dotnet_csproj:
   package_version: '{version}'
 
 before_build:
-- cmd: dotnet restore
-
+- cmd: >-
+    dotnet restore
+    nuget restore
 build:
   publish_nuget: true
   publish_nuget_symbols: true
