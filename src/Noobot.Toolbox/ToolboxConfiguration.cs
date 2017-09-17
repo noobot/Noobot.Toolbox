@@ -11,15 +11,12 @@ namespace Noobot.Toolbox
     {
         public ToolboxConfiguration()
         {
-            //UseMiddleware<AutoResponderMiddleware>();
             UseMiddleware<WelcomeMiddleware>();
             UseMiddleware<AdminMiddleware>();
             UseMiddleware<ScheduleMiddleware>();
             UseMiddleware<JokeMiddleware>();
             UseMiddleware<YieldTestMiddleware>();
             UseMiddleware<PingMiddleware>();
-            UseMiddleware<FlickrMiddleware>();
-            UseMiddleware<CalculatorMiddleware>();
             
             UsePlugin<JsonStoragePlugin>();
             UsePlugin<SchedulePlugin>();

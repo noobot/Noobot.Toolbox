@@ -18,7 +18,7 @@ namespace Noobot.Toolbox.Tests.Integration
         [SetUp]
         public void Setup()
         {
-            var containerFactory = new ContainerFactory(new ToolboxConfiguration(), new ConfigReader(), NoobotWrapper.GetLogger());
+            var containerFactory = new ContainerFactory(new ToolboxConfiguration(), new JsonConfigReader(), NoobotWrapper.GetLogger());
             _container = containerFactory.CreateContainer();
 
             _noobotCore = _container.GetNoobotCore();

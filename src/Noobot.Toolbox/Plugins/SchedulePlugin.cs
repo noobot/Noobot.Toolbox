@@ -31,7 +31,10 @@ namespace Noobot.Toolbox.Plugins
         {
             lock (_lock)
             {
-                _scheduler = StdSchedulerFactory.GetDefaultScheduler();
+                _scheduler = StdSchedulerFactory.GetDefaultScheduler()
+                    .GetAwaiter()
+                    .GetResult();
+
                 _scheduler.JobFactory = _jobFactory;
 
                 ScheduleEntry[] schedules = _storagePlugin.ReadFile<ScheduleEntry>(FileName);

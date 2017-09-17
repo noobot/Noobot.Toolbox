@@ -24,7 +24,7 @@ namespace Noobot.Toolbox.Tests.Integration.Plugins
         {
             File.Delete(Path.Combine(Environment.CurrentDirectory, "data/schedules.json"));
 
-            var containerFactory = new ContainerFactory(new SchedulerConfig(), new ConfigReader(), NoobotWrapper.GetLogger());
+            var containerFactory = new ContainerFactory(new SchedulerConfig(), new JsonConfigReader(), NoobotWrapper.GetLogger());
             _container = containerFactory.CreateContainer();
 
             _noobotCore = _container.GetNoobotCore();

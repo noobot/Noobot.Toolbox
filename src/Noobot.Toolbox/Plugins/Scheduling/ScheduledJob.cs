@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Logging;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Response;
@@ -23,12 +24,12 @@ namespace Noobot.Toolbox.Plugins.Scheduling
             _log = logger;
             _statsPlugin = statsPlugin;
         }
-
-        public void Execute(IJobExecutionContext context)
+        
+        public Task Execute(IJobExecutionContext context)
         {
             Guid guid = Guid.Parse(context.JobDetail.JobDataMap["guid"].ToString());
             var schedule = _schedulePlugin.ListAllSchedules().First(x => x.Guid == guid);
-            
+
             _statsPlugin.IncrementState("schedules:run");
             _log.Info($"Running schedule: {schedule}");
 
@@ -45,6 +46,8 @@ namespace Noobot.Toolbox.Plugins.Scheduling
 
             _noobotCore.MessageReceived(slackMessage);
             schedule.LastRun = DateTime.Now;
+
+            return Task.CompletedTask;
         }
     }
 }
