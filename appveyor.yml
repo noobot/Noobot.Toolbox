@@ -1,0 +1,30 @@
+version: 3.1.{build}
+skip_tags: true
+image: Visual Studio 2017 Preview
+configuration: Release
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+
+before_build:
+- cmd: dotnet restore
+
+build:
+  publish_nuget: true
+  publish_nuget_symbols: true
+  include_nuget_references: true
+  verbosity: minimal
+
+test: off
+
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: 8t4+xbVlkXA/FY3516ThrMibGxfCT7ZcSwyZw7KNwUlCH08KMPtznY2QphEn1n/z
+  artifact: /.*\.nupkg/
+  draft: true
+  on:
+    branch: master
