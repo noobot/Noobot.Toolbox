@@ -12,6 +12,7 @@ dotnet_csproj:
 before_build:
 - cmd: >-
     dotnet restore
+    
     nuget restore
 build:
   publish_nuget: true
