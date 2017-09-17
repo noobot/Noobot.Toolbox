@@ -26,10 +26,6 @@ TODO
 ### Middleware
   - AutoResponder
   -- Tests PMing a user (any message received will be returned to a users PM channel)
-  - Calculator
-  -- Will calculate the answer to maths problems. Can be triggered by both ```/calc 1+1```  or by saying ```1+1```
-  - Flickr
-  -- Will find a picture about the topic you give it e.g. ```/flickr flowers```
   - Joke
   -- Will tell you a random joke (_warning: these may be NSFW_)
   - Ping
