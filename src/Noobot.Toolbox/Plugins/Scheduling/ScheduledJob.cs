@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins.StandardPlugins;
@@ -14,24 +14,28 @@ namespace Noobot.Toolbox.Plugins.Scheduling
     {
         private readonly SchedulePlugin _schedulePlugin;
         private readonly INoobotCore _noobotCore;
-        private readonly ILog _log;
+        private readonly ILogger _log;
         private readonly StatsPlugin _statsPlugin;
 
-        public ScheduledJob(SchedulePlugin schedulePlugin, INoobotCore noobotCore, ILog logger, StatsPlugin statsPlugin)
+        public ScheduledJob(
+            SchedulePlugin schedulePlugin,
+            INoobotCore noobotCore,
+            ILogger logger,
+            StatsPlugin statsPlugin)
         {
             _schedulePlugin = schedulePlugin;
             _noobotCore = noobotCore;
             _log = logger;
             _statsPlugin = statsPlugin;
         }
-        
+
         public Task Execute(IJobExecutionContext context)
         {
             Guid guid = Guid.Parse(context.JobDetail.JobDataMap["guid"].ToString());
             var schedule = _schedulePlugin.ListAllSchedules().First(x => x.Guid == guid);
 
             _statsPlugin.IncrementState("schedules:run");
-            _log.Info($"Running schedule: {schedule}");
+            _log.LogInformation($"Running schedule: {schedule}");
 
             SlackChatHubType channelType = schedule.ChannelType == ResponseType.Channel
                 ? SlackChatHubType.Channel

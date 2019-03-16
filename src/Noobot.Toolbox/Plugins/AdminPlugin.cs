@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using Noobot.Core.Configuration;
 using Noobot.Core.Plugins;
 
@@ -12,12 +12,12 @@ namespace Noobot.Toolbox.Plugins
     public class AdminPlugin : IPlugin
     {
         private readonly IConfigReader _configReader;
-        private readonly ILog _log;
+        private readonly ILogger _log;
         private readonly HashSet<string> _admins = new HashSet<string>();
         private readonly object _lock = new object();
         private int? _adminPin;
 
-        public AdminPlugin(IConfigReader configReader, ILog log)
+        public AdminPlugin(IConfigReader configReader, ILogger log)
         {
             _configReader = configReader;
             _log = log;
@@ -29,11 +29,11 @@ namespace Noobot.Toolbox.Plugins
 
             if (_adminPin.HasValue)
             {
-                _log.Info($"Admin pin is '{_adminPin.Value}'");
+                _log.LogInformation($"Admin pin is '{_adminPin.Value}'");
             }
             else
             {
-                _log.Info("No admin pin detected. Admin mode deactivated.");
+                _log.LogInformation("No admin pin detected. Admin mode deactivated.");
             }
         }
 

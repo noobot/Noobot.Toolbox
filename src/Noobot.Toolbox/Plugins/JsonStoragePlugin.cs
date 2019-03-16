@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Noobot.Core.Plugins;
 
@@ -8,10 +8,10 @@ namespace Noobot.Toolbox.Plugins
 {
     public class JsonStoragePlugin : IPlugin
     {
-        private readonly ILog _log;
+        private readonly ILogger _log;
         private string _directory;
 
-        public JsonStoragePlugin(ILog log)
+        public JsonStoragePlugin(ILogger log)
         {
             _log = log;
         }
@@ -50,7 +50,7 @@ namespace Noobot.Toolbox.Plugins
             }
             catch (Exception ex)
             {
-                _log.Info($"Error loading file '{filePath}' - {ex}");
+                _log.LogInformation($"Error loading file '{filePath}' - {ex}");
             }
 
             return result;

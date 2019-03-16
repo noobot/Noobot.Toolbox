@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
@@ -19,9 +19,14 @@ namespace Noobot.Toolbox.Middleware
         private readonly AdminPlugin _adminPlugin;
         private readonly SchedulePlugin _schedulePlugin;
         private readonly INoobotCore _noobotCore;
-        private readonly ILog _log;
+        private readonly ILogger _log;
 
-        public AdminMiddleware(IMiddleware next, AdminPlugin adminPlugin, SchedulePlugin schedulePlugin, INoobotCore noobotCore, ILog log) : base(next)
+        public AdminMiddleware(
+            IMiddleware next, 
+            AdminPlugin adminPlugin, 
+            SchedulePlugin schedulePlugin, 
+            INoobotCore noobotCore, 
+            ILogger log) : base(next)
         {
             _adminPlugin = adminPlugin;
             _schedulePlugin = schedulePlugin;
@@ -78,13 +83,12 @@ namespace Noobot.Toolbox.Middleware
 
             string pinString = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
-            int pin;
-            if (int.TryParse(pinString, out pin))
+            if (int.TryParse(pinString, out var pin))
             {
                 if (_adminPlugin.AuthoriseUser(message.UserId, pin))
                 {
                     yield return message.ReplyToChannel($"{message.Username} - you now have admin rights.");
-                    _log.Info($"{message.Username} now has admin rights.");
+                    _log.LogInformation($"{message.Username} now has admin rights.");
                 }
                 else
                 {

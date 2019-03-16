@@ -1,13 +1,12 @@
-﻿using Common.Logging;
-using Common.Logging.Simple;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Noobot.Toolbox.Tests.Integration
 {
     public static class NoobotWrapper
     {
-        public static ConsoleOutLogger GetLogger()
+        public static ILogger GetLogger()
         {
-            return new ConsoleOutLogger("Integration Test", LogLevel.All, true, true, false, "yyyy/MM/dd HH:mm:ss:fff");
+            return new ConsoleLogger();
         }
     }
 }
