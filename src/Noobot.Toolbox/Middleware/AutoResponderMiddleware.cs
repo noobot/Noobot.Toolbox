@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -24,9 +25,9 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> AutoResponseHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> AutoResponseHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            yield return message.ReplyDirectlyToUser(message.FullText);
+            yield return await Task.FromResult(message.ReplyDirectlyToUser(message.FullText));
         }
     }
 }

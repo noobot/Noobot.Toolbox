@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -56,29 +57,29 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> HourlyHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            int minutesPastTheHour = DateTime.Now.Minute;
-            string schedule = $"0 {minutesPastTheHour} */1 * * ?";
-            string command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
+            var minutesPastTheHour = DateTime.Now.Minute;
+            var schedule = $"0 {minutesPastTheHour} */1 * * ?";
+            var command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
-            yield return CreateSchedule(message, command, schedule);
+            yield return await CreateSchedule(message, command, schedule);
         }
 
-        private IEnumerable<ResponseMessage> DayHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> DayHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            int minutesPastTheHour = DateTime.Now.Minute - 1;
-            int hourOfDay = DateTime.Now.Hour;
-            string schedule = $"0 {minutesPastTheHour} {hourOfDay} * * ?";
-            string command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
+            var minutesPastTheHour = DateTime.Now.Minute - 1;
+            var hourOfDay = DateTime.Now.Hour;
+            var schedule = $"0 {minutesPastTheHour} {hourOfDay} * * ?";
+            var command = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
-            yield return CreateSchedule(message, command, schedule);
+            yield return await CreateSchedule(message, command, schedule);
         }
 
-        private IEnumerable<ResponseMessage> CronHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> CronHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string cronJob = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
-            Match regexMatch = CronFormat.Match(cronJob);
+            var cronJob = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
+            var regexMatch = CronFormat.Match(cronJob);
 
             if (!regexMatch.Success)
             {
@@ -86,13 +87,13 @@ namespace Noobot.Toolbox.Middleware
                 yield break;
             }
 
-            string schedule = regexMatch.Groups[1].Value.Trim();
-            string command = regexMatch.Groups[2].Value.Trim();
+            var schedule = regexMatch.Groups[1].Value.Trim();
+            var command = regexMatch.Groups[2].Value.Trim();
 
-            yield return CreateSchedule(message, command, schedule);
+            yield return await CreateSchedule(message, command, schedule);
         }
 
-        private ResponseMessage CreateSchedule(IncomingMessage message, string command, string cronSchedule)
+        private async Task<ResponseMessage> CreateSchedule(IncomingMessage message, string command, string cronSchedule)
         {
             var schedule = new ScheduleEntry
             {
@@ -108,7 +109,7 @@ namespace Noobot.Toolbox.Middleware
 
             if (!CronExpression.IsValidExpression(cronSchedule))
             {
-                return message.ReplyToChannel($"Unknown cron schedule `'{cronSchedule}'`");
+                return await Task.FromResult(message.ReplyToChannel($"Unknown cron schedule `'{cronSchedule}'`"));
             }
 
             if (string.IsNullOrEmpty(schedule.Command))
@@ -120,13 +121,13 @@ namespace Noobot.Toolbox.Middleware
             return message.ReplyToChannel($"Schedule created for command '{schedule.Command}'.");
         }
 
-        private IEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> ListHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
         {
-            ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
+            var schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
 
             if (schedules.Any())
             {
-                yield return message.ReplyToChannel("Schedules for channel:");
+                yield return await Task.FromResult(message.ReplyToChannel("Schedules for channel:"));
 
                 string[] scheduleStrings = schedules.Select(x => x.ToString()).ToArray();
                 yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
@@ -137,19 +138,18 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> DeleteHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> DeleteHandlerForChannel(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string idString = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
-            Guid guid;
+            var idString = message.TargetedText.Substring(matchedHandle.HandleHelpText.Length).Trim();
 
-            if (Guid.TryParse(idString, out guid))
+            if (Guid.TryParse(idString, out var guid))
             {
-                ScheduleEntry[] schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
-                ScheduleEntry scheduleToDelete = schedules.FirstOrDefault(x => x.Guid == guid);
+                var schedules = _schedulePlugin.ListSchedulesForChannel(message.Channel);
+                var scheduleToDelete = schedules.FirstOrDefault(x => x.Guid == guid);
 
                 if (scheduleToDelete == null)
                 {
-                    yield return message.ReplyToChannel($"Unable to find schedule with GUID: `'{guid}'`");
+                    yield return await Task.FromResult(message.ReplyToChannel($"Unable to find schedule with GUID: `'{guid}'`"));
                 }
                 else
                 {

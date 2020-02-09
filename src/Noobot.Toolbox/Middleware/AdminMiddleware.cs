@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Noobot.Core;
 using Noobot.Core.MessagingPipeline.Middleware;
@@ -73,11 +74,11 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> PinHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> PinHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AdminModeEnabled())
             {
-                yield return message.ReplyToChannel("Admin mode isn't enabled.");
+                yield return await Task.FromResult(message.ReplyToChannel("Admin mode isn't enabled."));
                 yield break;
             }
 
@@ -101,11 +102,11 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> AdminHelpHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> AdminHelpHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
-                yield return message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function.");
+                yield return await Task.FromResult(message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function."));
                 yield break;
             }
 
@@ -116,26 +117,26 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> SchedulesListHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> SchedulesListHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
-                yield return message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function.");
+                yield return await Task.FromResult(message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function."));
                 yield break;
             }
 
             var schedules = _schedulePlugin.ListAllSchedules();
-            string[] scheduleStrings = schedules.Select(x => $"Guid: '{x.Guid}' Channel: '{x.Channel}'.").ToArray();
+            var scheduleStrings = schedules.Select(x => $"Guid: '{x.Guid}' Channel: '{x.Channel}'.").ToArray();
 
             yield return message.ReplyToChannel("All Schedules:");
             yield return message.ReplyToChannel(">>>" + string.Join("\n", scheduleStrings));
         }
 
-        private IEnumerable<ResponseMessage> DeleteSchedulesHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> DeleteSchedulesHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
-                yield return message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function.");
+                yield return await Task.FromResult(message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function."));
                 yield break;
             }
 
@@ -145,15 +146,15 @@ namespace Noobot.Toolbox.Middleware
             yield return message.ReplyToChannel("All schedules deleted");
         }
 
-        private IEnumerable<ResponseMessage> ChannelsHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> ChannelsHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (!_adminPlugin.AuthenticateUser(message.UserId))
             {
-                yield return message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function.");
+                yield return await Task.FromResult(message.ReplyToChannel($"Sorry {message.Username}, only admins can use this function."));
                 yield break;
             }
 
-            Dictionary<string, string> channels = _noobotCore.ListChannels();
+            var channels = _noobotCore.ListChannels();
             yield return message.ReplyToChannel("All Connected Channels:");
             yield return message.ReplyToChannel(">>>" + string.Join("\n", channels.Select(x => $"{x.Key}: {x.Value}")));
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -27,12 +27,14 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> WelcomeHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> WelcomeHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             _statsPlugin.IncrementState("Hello");
 
             yield return message.ReplyToChannel($"Hey @{message.Username}, how you doing?");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
             yield return message.ReplyDirectlyToUser("I know where you live...");
         }
     }

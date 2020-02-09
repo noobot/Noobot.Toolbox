@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Flurl;
 using Flurl.Http;
 using Newtonsoft.Json;
@@ -30,12 +31,14 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> JokeHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> JokeHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             yield return message.IndicateTypingOnChannel();
 
-            var jokeResponse = new Random().Next(0, 100) < 80 ? GetChuckNorrisJoke() : GetMommaJoke();
-         
+            var jokeResponse = await (new Random().Next(0, 100) < 80
+                ? GetChuckNorrisJoke()
+                : GetMommaJoke());
+
             _statsPlugin.IncrementState("Jokes:Told");
             var jokeString = $"{{ {jokeResponse.SelectToken("$..joke").Parent} }}";
             var joke = JsonConvert.DeserializeObject<JokeContainer>(jokeString);
@@ -43,21 +46,17 @@ namespace Noobot.Toolbox.Middleware
             yield return message.ReplyToChannel(joke.Joke);
         }
 
-        private JObject GetChuckNorrisJoke()
+        private static async Task<JObject> GetChuckNorrisJoke()
         {
-            return "http://api.icndb.com"
+            return await "http://api.icndb.com"
                 .AppendPathSegment("/jokes/random")
-                .GetJsonAsync<JObject>()
-                .GetAwaiter()
-                .GetResult();
+                .GetJsonAsync<JObject>();
         }
 
-        private JObject GetMommaJoke()
+        private static async Task<JObject> GetMommaJoke()
         {
-            return "http://api.yomomma.info"
-                .GetJsonAsync<JObject>()
-                .GetAwaiter()
-                .GetResult();
+            return await "http://api.yomomma.info"
+                .GetJsonAsync<JObject>();
         }
 
         private class JokeContainer

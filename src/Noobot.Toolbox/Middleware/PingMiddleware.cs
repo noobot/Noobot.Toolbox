@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -39,17 +40,17 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> PingHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> PingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            yield return message.ReplyToChannel($"Ok, I will start pinging @{message.Username}");
+            yield return await Task.FromResult(message.ReplyToChannel($"Ok, I will start pinging @{message.Username}"));
             _pingPlugin.StartPingingUser(message.UserId);
         }
 
-        private IEnumerable<ResponseMessage> StopPingingHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> StopPingingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             if (_pingPlugin.StopPingingUser(message.UserId))
             {
-                yield return message.ReplyToChannel($"Ok, I will stop pinging @{message.Username}");
+                yield return await Task.FromResult(message.ReplyToChannel($"Ok, I will stop pinging @{message.Username}"));
             }
             else
             {
@@ -57,13 +58,13 @@ namespace Noobot.Toolbox.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> ListPingHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> ListPingHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            string[] users = _pingPlugin.ListPingedUsers();
+            var users = _pingPlugin.ListPingedUsers();
 
             if (users.Any())
             {
-                yield return message.ReplyDirectlyToUser("I am currently pinging:");
+                yield return await Task.FromResult(message.ReplyDirectlyToUser("I am currently pinging:"));
                 yield return message.ReplyDirectlyToUser(">>>" + string.Join("\n", users));
             }
             else

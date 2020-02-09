@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -23,13 +23,13 @@ namespace Noobot.Toolbox.Middleware
             };
         }
 
-        private IEnumerable<ResponseMessage> YieldTest(IncomingMessage incomingMessage, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> YieldTest(IncomingMessage incomingMessage, IValidHandle matchedHandle)
         {
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 Console.WriteLine("Sending message");
                 yield return new ResponseMessage { Channel = incomingMessage.Channel, Text = "Waiting " + i };
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                await Task.Delay(TimeSpan.FromSeconds(2));
             }
         }
     }
